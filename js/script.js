@@ -1,12 +1,18 @@
 //div where your profile info appears
 const overview = document.querySelector(".overview");
+//github username
 const username = "emilyann505";
+//list of repos appear
 const repoList = document.querySelector(".repo-list");
+//all repo info appears
+const allRepoInfo = document.querySelector(".repos")
+//individual repo data
+const repoData = document.querySelector(".repo-data");
 
 const getGitHub = async function () {
     const request = await fetch(`https://api.github.com/users/${username}`);
     const data = await request.json();
-    console.log(data);
+    // console.log(data);
     fetchedUserInfo(data);
 };
 
@@ -45,3 +51,42 @@ const displayRepo = function (repos) {
     }
 };
 
+//click event for repo list
+repoList.addEventListener("click", function (e) {
+    if (e.target.matches("h3")) {
+        const repoName = e.target.innerText;
+        specificRepo(repoName);
+    }
+});
+
+const specificRepo = async function (repoName){
+    const fetchInfo = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await fetchInfo.json();
+    console.log(repoInfo);
+
+    //array of languages
+    const fetchLanguages = await fetch(repoInfo.languages_url);
+    const languageData = await  fetchLanguages.json();
+    
+    //list of languages
+    const languages = [];
+    for (const language in languageData) {
+        languages.push(language);
+    }
+    displayRepoInfo(repoInfo, languages);
+};
+
+//function to display specific repo info
+const displayRepoInfo = function (repoInfo, languages) {
+    repoData.innerHTML = "";
+    repoData.classList.remove("hide");
+    allRepoInfo.classList.add("hide");
+    const div = document.createElement("div");
+    div.innerHTML = `<h3>Name: ${repoInfo.name}</h3>
+    <p>Description: ${repoInfo.description}</p>
+    <p>Default Branch: ${repoInfo.default_branch}</p>
+    <p>Languages: ${languages.join(", ")}</p>
+    <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
+
+    repoData.append(div);
+};
